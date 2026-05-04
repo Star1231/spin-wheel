@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Spin & Win Discount</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            margin-top: 30px;
+        }
+
+        .wheel-container {
+            position: relative;
+            margin: 40px auto;
+            width: 400px;
+            height: 400px;
+        }
+
+        .pointer {
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid red;
+            position: absolute;
+            top: -8px;
+            left: 175px;
+            z-index: 10;
+        }
+
+        canvas {
+            transition: transform 4s ease-out;
+        }
+
+        button {
+            padding: 15px 35px;
+            font-size: 20px;
+            background: #00b050;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 25px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🎡 Spin & Win a Discount</h1>
+
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas id="wheelCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <button onclick="spinWheel()">SPIN</button>
+
+    <div id="result"></div>
+
+    <script>
+        const canvas = document.getElementById("wheelCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const prizes = [
+            "5% OFF",
+            "10% OFF",
+            "FREE CHECK",
+            "R250 OFF",
+            "15% OFF",
+            "TRY AGAIN"
+        ];
+
+        const colors = [
+            "#ffcc00",
+            "#00b050",
+            "#0070c0",
+            "#ff6600",
+            "#7030a0",
+            "#c00000"
+        ];
+
+        const sliceAngle = 360 / prizes.length;
+        let rotation = 0;
+        let spinning = false;
+
+        function drawWheel() {
+            const centerX = 200;
+            const centerY = 200;
+            const radius = 190;
+
+            for (let i = 0; i < prizes.length; i++) {
+                const startAngle = (i * sliceAngle - 90) * Math.PI / 180;
+                const endAngle = ((i + 1) * sliceAngle - 90) * Math.PI / 180;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+
+                ctx.fillStyle = colors[i];
+                ctx.fill();
+
+                ctx.strokeStyle = "#222";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate((i * sliceAngle + sliceAngle / 2 - 90) * Math.PI / 180);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "white";
+                ctx.font = "bold 18px Arial";
+                ctx.fillText(prizes[i], radius - 20, 8);
+                ctx.restore();
+            }
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
+            ctx.fillStyle = "#222";
+            ctx.fill();
+        }
+
+        function spinWheel() {
+            if (spinning) return;
+
+            spinning = true;
+
+            const result = document.getElementById("result");
+            result.innerText = "";
+
+            const extraSpins = 360 * 6;
+            const randomDegrees = Math.floor(Math.random() * 360);
+
+            rotation += extraSpins + randomDegrees;
+
+            canvas.style.transform = `rotate(${rotation}deg)`;
+
+            setTimeout(() => {
+                const finalRotation = rotation % 360;
+
+                // Pointer is at the top.
+                // We reverse the wheel rotation to find what slice is under the pointer.
+                const pointerAngle = (360 - finalRotation) % 360;
+
+                const winningIndex = Math.floor(pointerAngle / sliceAngle);
+
+                result.innerText = "🎉 You've won: " + prizes[winningIndex];
+
+                spinning = false;
+            }, 4200);
+        }
+
+        drawWheel();
+    </script>
+
+</body>
+</html>
