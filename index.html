@@ -1,22 +1,52 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Spin & Win Discount</title>
+    <title>e-CAR Spin & Win</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: #f4f4f4;
+            background: #111;
+            color: white;
+            margin: 0;
+            padding: 20px;
         }
 
-        h1 {
-            margin-top: 30px;
+        .card {
+            max-width: 520px;
+            margin: auto;
+            background: #1c1c1c;
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: 0 0 25px rgba(0, 176, 80, 0.35);
+        }
+
+        .brand {
+            font-size: 38px;
+            font-weight: bold;
+            color: #00b050;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        input {
+            padding: 13px;
+            width: 85%;
+            margin: 7px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
         }
 
         .wheel-container {
             position: relative;
-            margin: 40px auto;
+            margin: 25px auto;
             width: 400px;
             height: 400px;
         }
@@ -26,9 +56,9 @@
             height: 0;
             border-left: 25px solid transparent;
             border-right: 25px solid transparent;
-            border-top: 50px solid red;
+            border-top: 55px solid #ff0000;
             position: absolute;
-            top: -8px;
+            top: -10px;
             left: 175px;
             z-index: 10;
         }
@@ -38,44 +68,92 @@
         }
 
         button {
-            padding: 15px 35px;
-            font-size: 20px;
+            padding: 15px 40px;
+            font-size: 22px;
             background: #00b050;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
+            font-weight: bold;
         }
+
+            button:hover {
+                background: #008a3d;
+            }
+
+            button:disabled {
+                background: #555;
+                cursor: not-allowed;
+            }
 
         #result {
             margin-top: 25px;
-            font-size: 26px;
+            font-size: 23px;
             font-weight: bold;
+            white-space: pre-line;
+            color: #ffcc00;
+        }
+
+        .terms {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 500px) {
+            .wheel-container {
+                width: 320px;
+                height: 320px;
+            }
+
+            canvas {
+                width: 320px;
+                height: 320px;
+            }
+
+            .pointer {
+                left: 135px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <h1>🎡 Spin & Win a Discount</h1>
+    <div class="card">
+        <div class="brand">e-CAR</div>
+        <div class="subtitle">Spin & Win a Workshop Discount 🎡</div>
 
-    <div class="wheel-container">
-        <div class="pointer"></div>
-        <canvas id="wheelCanvas" width="400" height="400"></canvas>
+        <input id="name" type="text" placeholder="Enter your name"><br>
+        <input id="cell" type="text" placeholder="Enter your cellphone number"><br>
+
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <canvas id="wheelCanvas" width="400" height="400"></canvas>
+        </div>
+
+        <button id="spinButton" onclick="spinWheel()">SPIN</button>
+
+        <div id="result"></div>
+
+        <div class="terms">
+            One spin per customer. Voucher valid for 30 days. Discount cannot be exchanged for cash.
+            Discount applies to labour only unless stated otherwise.
+        </div>
     </div>
 
-    <button onclick="spinWheel()">SPIN</button>
-
-    <div id="result"></div>
-
     <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyH5T2BF8z2ncxK5-rfYmJEaR-qnY0CfmzVn_pGG_Gs8E9XQjDAXy5QI_3c895QXHlI/exec";
+
         const canvas = document.getElementById("wheelCanvas");
         const ctx = canvas.getContext("2d");
 
         const prizes = [
             "5% OFF",
             "10% OFF",
-            "FREE CHECK",
+            "25% OFF",
             "R250 OFF",
             "15% OFF",
             "TRY AGAIN"
@@ -90,6 +168,17 @@
             "#c00000"
         ];
 
+        // Weighted prizes:
+        // More entries = higher chance.
+        const weightedPrizes = [
+            "5% OFF", "5% OFF", "5% OFF",
+            "10% OFF", "10% OFF", "10% OFF",
+            "15% OFF", "15% OFF",
+            "TRY AGAIN", "TRY AGAIN",
+            "25% OFF",
+            "R250 OFF"
+        ];
+
         const sliceAngle = 360 / prizes.length;
         let rotation = 0;
         let spinning = false;
@@ -98,6 +187,8 @@
             const centerX = 200;
             const centerY = 200;
             const radius = 190;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (let i = 0; i < prizes.length; i++) {
                 const startAngle = (i * sliceAngle - 90) * Math.PI / 180;
@@ -111,8 +202,8 @@
                 ctx.fillStyle = colors[i];
                 ctx.fill();
 
-                ctx.strokeStyle = "#222";
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#111";
+                ctx.lineWidth = 3;
                 ctx.stroke();
 
                 ctx.save();
@@ -126,38 +217,97 @@
             }
 
             ctx.beginPath();
-            ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
-            ctx.fillStyle = "#222";
+            ctx.arc(200, 200, 28, 0, 2 * Math.PI);
+            ctx.fillStyle = "#111";
             ctx.fill();
+
+            ctx.fillStyle = "#00b050";
+            ctx.font = "bold 13px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("e-CAR", 200, 205);
+        }
+
+        function generateVoucherCode() {
+            return "ECAR-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function chooseWeightedPrize() {
+            const randomIndex = Math.floor(Math.random() * weightedPrizes.length);
+            return weightedPrizes[randomIndex];
+        }
+
+        function getPrizeIndex(prize) {
+            return prizes.indexOf(prize);
         }
 
         function spinWheel() {
             if (spinning) return;
 
-            spinning = true;
-
+            const name = document.getElementById("name").value.trim();
+            const cell = document.getElementById("cell").value.trim();
             const result = document.getElementById("result");
+            const spinButton = document.getElementById("spinButton");
+
+            if (!name || !cell) {
+                alert("Please enter your name and cellphone number");
+                return;
+            }
+
+            if (cell.length < 10) {
+                alert("Please enter a valid cellphone number");
+                return;
+            }
+
+            spinning = true;
+            spinButton.disabled = true;
             result.innerText = "";
 
-            const extraSpins = 360 * 6;
-            const randomDegrees = Math.floor(Math.random() * 360);
+            const selectedPrize = chooseWeightedPrize();
+            const selectedIndex = getPrizeIndex(selectedPrize);
 
-            rotation += extraSpins + randomDegrees;
+            const fullSpins = 360 * 6;
+            const selectedSliceMiddle = selectedIndex * sliceAngle + sliceAngle / 2;
+
+            // This makes the selected prize land under the top pointer.
+            const targetRotation = 360 - selectedSliceMiddle;
+
+            rotation += fullSpins + targetRotation;
 
             canvas.style.transform = `rotate(${rotation}deg)`;
 
             setTimeout(() => {
-                const finalRotation = rotation % 360;
+                const voucherCode = generateVoucherCode();
 
-                // Pointer is at the top.
-                // We reverse the wheel rotation to find what slice is under the pointer.
-                const pointerAngle = (360 - finalRotation) % 360;
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        name: name,
+                        cell: cell,
+                        prize: selectedPrize,
+                        voucherCode: voucherCode
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "duplicate") {
+                            result.innerText = "⚠️ This cellphone number has already used the spin wheel.";
+                        } else {
+                            result.innerText =
+                                "🎉 You've won: " + selectedPrize +
+                                "\nVoucher: " + voucherCode;
+                        }
+                    })
+                    .catch(error => {
+                        result.innerText =
+                            "🎉 You've won: " + selectedPrize +
+                            "\nVoucher: " + voucherCode +
+                            "\n\n⚠️ Voucher could not save. Please take a screenshot.";
+                    })
+                    .finally(() => {
+                        spinning = false;
+                        spinButton.disabled = false;
+                    });
 
-                const winningIndex = Math.floor(pointerAngle / sliceAngle);
-
-                result.innerText = "🎉 You've won: " + prizes[winningIndex];
-
-                spinning = false;
             }, 4200);
         }
 
